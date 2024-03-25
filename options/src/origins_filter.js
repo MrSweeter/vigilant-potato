@@ -1,5 +1,6 @@
-import { StorageSync } from '../../utils/browser.js';
-import { defaultOriginsFilterSetting } from '../../utils/feature_default_configuration.js';
+import { baseSettings } from '../../configuration.js';
+import { Runtime, StorageSync } from '../../src/utils/browser.js';
+import { MESSAGE_ACTION } from '../../src/utils/messaging.js';
 
 //#region CRUD
 export async function createOriginsFilterOrigin() {
@@ -38,9 +39,7 @@ export async function createOriginsFilterOrigin() {
 }
 
 async function readOriginsFilterOrigins() {
-    const { originsFilterOrigins } = await StorageSync.get({
-        originsFilterOrigins: defaultOriginsFilterSetting.originsFilterOrigins,
-    });
+    const { originsFilterOrigins } = await StorageSync.get(baseSettings);
     return originsFilterOrigins;
 }
 
@@ -68,7 +67,7 @@ export async function load() {
 }
 
 async function restore() {
-    const configuration = await StorageSync.get(defaultOriginsFilterSetting);
+    const configuration = await StorageSync.get(baseSettings);
 
     await renderOriginsObject(configuration.originsFilterOrigins);
 }
@@ -92,9 +91,14 @@ async function renderOriginsObject(origins) {
 
     await StorageSync.set({ originsFilterOrigins: origins });
 
+    const response = await Runtime.sendMessage({
+        action: MESSAGE_ACTION.GET_FEATURES_LIST,
+    });
+    const features = response.features.filter((f) => !f.limited).map((f) => f.id);
+
     const container = document.getElementById('qol_origins_filter_table_body');
     container.innerHTML = '';
-    originsArray.forEach((o, id) => container.appendChild(renderOrigin(id, o)));
+    originsArray.forEach((o, id) => container.appendChild(renderOrigin(id, o, features)));
     renderOriginsFilterError();
 }
 
@@ -119,21 +123,9 @@ async function updateOriginFeature(idx, origin, feature, checked) {
     rowInputs.forEach((i) => (i.disabled = false));
 }
 
-function renderOrigin(idx, origin, blacklist) {
+function renderOrigin(idx, origin, features) {
     const originTemplate = document.createElement('template');
 
-    const features = [
-        'awesomeLoadingLarge',
-        'awesomeLoadingSmall',
-        'assignMeTask',
-        'starringTaskEffect',
-        'saveKnowledge',
-        'themeSwitch',
-        'awesomeStyle',
-        'unfocusApp',
-        'newServerActionCode',
-        'tooltipMetadata',
-    ];
     const featuresUI = features
         .map((f) =>
             `
