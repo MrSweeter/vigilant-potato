@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "version": "1.2.0",
+    "version": "1.3.1",
     "name": "Odoo - Quality of Life & Fun",
     "description": "Odoo - Quality of Life & Fun",
     "author": "Vanden Bergh Gaëtan",
@@ -35,6 +35,7 @@
             "matches": ["http://*/*", "https://*/*"],
             "js": [
                 "utils/confetti_qol.js",
+                "utils/url_parser.js",
                 "content/src/task/task_setup.js",
                 "content/src/task/assign_me.js",
                 "content/src/save_knowledge.js",
