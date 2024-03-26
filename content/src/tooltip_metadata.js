@@ -30,8 +30,8 @@ async function appendTooltipMetadata(href) {
 }
 
 async function loadRecordMetadata(model_id) {
-    const { id, model } = model_id;
-    const metadata = await getMetadata(model, id);
+    const { resId, model } = model_id;
+    const metadata = await getMetadata(model, resId);
     appendRecordMetadataTooltip(metadata);
 }
 
@@ -70,8 +70,11 @@ function appendActionWindowTooltip(actionWindow) {
         { label: 'XML ID', value: actionWindow.xmlid },
         { label: 'Name', value: actionWindow.name },
         { label: 'Model', value: actionWindow.res_model },
-        { label: '[Filters] Domain', value: actionWindow.domain.trim() },
-        { label: '[Filters] Context', value: actionWindow.context.trim() },
+        {
+            label: '[Filters] Domain',
+            value: actionWindow.domain ? actionWindow.domain.trim() : false,
+        },
+        { label: '[Filters] Context', value: actionWindow.context?.trim() },
         { label: '[Filters] Limit', value: actionWindow.limit },
         { label: '[Filters] Filter', value: actionWindow.filter },
     ]);
