@@ -1,5 +1,6 @@
 import ProjectTaskShareContentFeature from '../../shared/projectTaskShare/content.js';
-import confetti from 'canvas-confetti';
+import Confetti from '../../utils/confetti.js';
+
 import configuration from './configuration.js';
 
 const defaultsStar = {
@@ -18,6 +19,7 @@ export default class StarringTaskEffectContentFeature extends ProjectTaskShareCo
         super(configuration);
         this.addStarsGenerator = this.addStarsGenerator.bind(this);
         this.generateStars = this.generateStars.bind(this);
+        this.confetti = new Confetti();
     }
 
     async loadFeatureWithTask(task) {
@@ -38,7 +40,7 @@ export default class StarringTaskEffectContentFeature extends ProjectTaskShareCo
     }
 
     async shoot(x, y) {
-        confetti({
+        this.confetti.fire({
             ...defaultsStar,
             particleCount: 1,
             scalar: 0.8,
@@ -46,7 +48,7 @@ export default class StarringTaskEffectContentFeature extends ProjectTaskShareCo
             origin: { x: x, y: y },
         });
 
-        confetti({
+        this.confetti.fire({
             ...defaultsStar,
             particleCount: 2,
             scalar: 0.75,

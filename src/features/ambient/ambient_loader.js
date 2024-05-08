@@ -1,4 +1,4 @@
-import confetti from 'canvas-confetti';
+import { shapeFromText } from '../../utils/confetti';
 
 const lockedState = ['circle', 'square', 'star'];
 
@@ -18,7 +18,7 @@ export const emojisLoader = ({
     flat = true,
 }) => {
     const emojisBitmap = emojis.map((emoji) =>
-        lockedState.includes(emoji) ? emoji : confetti.shapeFromText({ text: emoji, scalar: size.max, color: color })
+        lockedState.includes(emoji) ? emoji : shapeFromText({ text: emoji, scalar: size.max, color: color })
     );
 
     const scalarComputed = size.dynamic ? () => Math.round(randomInRange(size.min, size.max)) : size.max;
@@ -37,9 +37,9 @@ export const emojisLoader = ({
             },
             colors: [color],
             shapes: emojisBitmap,
-            gravity: gravityComputed(),
-            scalar: scalarComputed(),
-            drift: driftComputed(),
+            gravity: gravityComputed,
+            scalar: scalarComputed,
+            drift: driftComputed,
             alpha: alpha,
         };
     };
@@ -70,10 +70,10 @@ export const birthdayLoader = () => {
     const scalar = 2;
     const scalarName = 4;
     // 🥳🎂🎉
-    const emoji1 = confetti.shapeFromText({ text: '🎂', scalar: scalar });
-    const emoji2 = confetti.shapeFromText({ text: '🎉', scalar: scalar });
-    const emoji3 = confetti.shapeFromText({ text: '🥳', scalar: scalar });
-    const name = confetti.shapeFromText({ text: 'John', scalar: scalarName });
+    const emoji1 = shapeFromText({ text: '🎂', scalar: scalar });
+    const emoji2 = shapeFromText({ text: '🎉', scalar: scalar });
+    const emoji3 = shapeFromText({ text: '🥳', scalar: scalar });
+    const name = shapeFromText({ text: 'John', scalar: scalarName });
     return [
         {
             scalar: scalar,

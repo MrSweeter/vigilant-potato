@@ -1,4 +1,4 @@
-import confetti from 'canvas-confetti';
+import Confetti from '../../utils/confetti';
 import {
     birthdayLoader,
     defaultLoader,
@@ -38,21 +38,12 @@ const ambientPeriods = {
     '12-31': 'newyear_eve',
 };
 
-let joorneyConfetti = undefined;
+let ambientConfetti = undefined;
 
 export default class AmbientManager {
-    constructor() {
-        console.log('CONSTRUCT');
-        const canvas = document.createElement('canvas');
-        canvas.style.position = 'absolute';
-        canvas.style.height = '100%';
-        document.body.appendChild(canvas);
-        joorneyConfetti = confetti.create(canvas, {
-            resize: true,
-            useWorker: false,
-            disableForReducedMotion: true,
-        });
-        this.loader = new AmbientLoader(joorneyConfetti);
+    constructor(ambientConfettiArg) {
+        ambientConfetti = ambientConfettiArg ?? new Confetti();
+        this.loader = new AmbientLoader();
     }
 
     getTodayAmbient() {
@@ -78,7 +69,7 @@ export default class AmbientManager {
         return ambient;
     }
 
-    loadAmbient(ambient) {
+    async loadAmbient(ambient) {
         switch (ambient) {
             case 'birthday': {
                 this.loader.loadOneTimeAmbient(birthdayLoader);
@@ -152,27 +143,41 @@ export default class AmbientManager {
 }
 
 class AmbientLoader {
-    constructor(confetti) {
-        this.loaderConfetti = confetti;
+    constructor() {
+        this.stopped = true;
+    }
+
+    async stop(delay) {
+        this.stopped = true;
+        await ambientConfetti.reset();
+        await new Promise((r) => setTimeout(r, delay + 10));
     }
 
     loadAmbientCount(ambientLoader, count, delay) {
         this.loadAmbient(ambientLoader, count * delay, count);
     }
 
-    loadOneTimeAmbient(ambientLoader) {
+    async loadOneTimeAmbient(ambientLoader) {
+        await this.stop(delay);
+        this.stopped = false;
         const ambients = ambientLoader();
         this.playAmbients(ambients);
     }
 
-    loadAmbient(
+    async loadAmbient(
         ambientLoader,
         duration,
         countArg = undefined,
         animationStartArg = Date.now(),
         animationEnd = animationStartArg + duration,
-        delay = duration / Number.parseFloat(countArg) ?? 1
+        delay = countArg ? duration / Number.parseFloat(countArg) : 1
     ) {
+        await this.stop(delay);
+        this.stopped = false;
+        this._loadAmbient(ambientLoader, duration, countArg, animationStartArg, animationEnd, delay);
+    }
+
+    _loadAmbient(ambientLoader, duration, countArg, animationStartArg, animationEnd, delay) {
         const now = Date.now();
         const timeLeft = animationEnd - now;
         const ticks = Math.max(200, 500 * (timeLeft / duration));
@@ -193,9 +198,9 @@ class AmbientLoader {
             this.playAmbients(ambients);
         }
 
-        if (timeLeft > 0) {
+        if (timeLeft > 0 && !this.stopped) {
             requestAnimationFrame(() =>
-                this.loadAmbient(ambientLoader, duration, count, animationStart, animationEnd, delay)
+                this._loadAmbient(ambientLoader, duration, count, animationStart, animationEnd, delay)
             );
         }
     }
@@ -203,8 +208,7 @@ class AmbientLoader {
     playAmbients(ambientsArg) {
         const ambients = Array.isArray(ambientsArg) ? ambientsArg : [ambientsArg];
         for (const ambient of ambients) {
-            ambient.disableForReducedMotion = true;
-            joorneyConfetti(ambient);
+            ambientConfetti.fire(ambient);
         }
     }
 }
