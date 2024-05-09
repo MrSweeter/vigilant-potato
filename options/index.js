@@ -1,5 +1,6 @@
 import { getFeaturesAndCurrentSettings } from '../configuration.js';
 import { initImportExport } from './import_export.js';
+import { loadPage as loadAmbientPage } from './pages/ambient/index.js';
 import { loadPage as loadConfigurationPage } from './pages/configuration/index.js';
 import { loadPage as loadVersionPage } from './pages/version/index.js';
 import { loadPage as loadWebsitePage } from './pages/website/index.js';
@@ -28,6 +29,13 @@ const PAGES = [
         label: 'Supported versions',
         path: './pages/version/index.html',
         loader: loadVersionPage,
+    },
+    {
+        id: 'page-ambient',
+        menu: 'page-ambient',
+        label: 'Ambient',
+        path: './pages/ambient/index.html',
+        loader: loadAmbientPage,
     },
 ];
 

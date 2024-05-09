@@ -85,7 +85,7 @@ export default () => {
                 copy({ targets: [{ src: 'options/css/*', dest: `${dist}/options/css` }] }),
             ],
         },
-        ...getOptionPages(dist, ['website', 'configuration', 'version']),
+        ...getOptionPages(dist, ['website', 'configuration', 'version', 'ambient']),
         {
             input: 'options/migration/index.js',
             output: getESMOutput(`${dist}/options/migration/index.js`),
