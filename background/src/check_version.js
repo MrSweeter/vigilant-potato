@@ -41,7 +41,7 @@ function removeBuildFromVersion(version) {
     return version.split('.').slice(0, 3).join('.');
 }
 
-const openOption4Version = [];
+const openOption4Version = ['2.1.0'];
 export function openOption(force = false) {
     const currentVersion = removeBuildFromVersion(Runtime.getManifest().version);
     if (force || openOption4Version.includes(currentVersion)) {

@@ -44,6 +44,7 @@ Runtime.onInstalled.addListener(async (details) => {
         await StorageSync.set(settingsOrDefault);
         checkCommandShortcuts();
     }
+    await sleep(1000);
     openOption(isInstall);
 });
 
