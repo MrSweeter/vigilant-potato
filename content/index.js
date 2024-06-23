@@ -1,7 +1,7 @@
 import { importFeatureBackgroundTriggerFile, importFeatureContentFile } from '../configuration.js';
 import { getMenu } from '../src/api/odoo.js';
 import { getRunbotOpenUrl } from '../src/shared/limited/runbot_content.js';
-import { loadToast } from '../src/toast/index.js';
+import { ToastManager, loadToast } from '../src/toast/index.js';
 import { Runtime, StorageLocal, sendRuntimeMessage } from '../src/utils/browser.js';
 import { MESSAGE_ACTION } from '../src/utils/messaging.js';
 import { createActionMenuURL } from '../src/utils/url_manager.js';
@@ -135,20 +135,23 @@ function updateLandingPage() {
 }
 
 async function openPathMenu(menupath) {
-    const result = await getMenu(menupath);
+    try {
+        const result = await getMenu(menupath);
 
-    if (result.length === 0) {
-        alert(`Menu '${menupath}' not found.`);
-        throw new Error();
-    }
-    if (result.length > 1) {
-        alert(`Too much menu found for path ${menupath}.`);
-    }
-    const menu = result[0];
-    const windowActionID = menu.action.split(',')[1];
-    const url = window.location;
+        if (result.length === 0) {
+            throw new Error(`Menu '${menupath}' not found.`);
+        }
+        if (result.length > 1) {
+            throw new Error(`Too much menu found for path ${menupath}.`);
+        }
+        const menu = result[0];
+        const windowActionID = menu.action.split(',')[1];
+        const url = window.location;
 
-    openURL(createActionMenuURL(url, windowActionID));
+        openURL(createActionMenuURL(url, windowActionID));
+    } catch (err) {
+        ToastManager.warn('contextOdooMenus', 'An error occur during menu opening', err.message);
+    }
 }
 
 function openRunbotWithVersion() {

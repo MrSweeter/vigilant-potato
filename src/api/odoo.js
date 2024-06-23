@@ -190,8 +190,8 @@ export async function writeRecord(model, recordID, writeData) {
 
     const data = await response.json();
 
-    if (data?.error || !data?.result) {
-        throw new Error(data.error?.data?.message);
+    if (data.error) {
+        throw new OdooAPIException(data.error, false);
     }
     if (data?.result === true) {
         return true;

@@ -1,6 +1,7 @@
 import { writeRecord } from '../../api/odoo.js';
 import { generateTrackingMessage, generateUserAvatarTag } from '../../html_generator.js';
 import ProjectTaskShareContentFeature from '../../shared/projectTaskShare/content.js';
+import { ToastManager } from '../../toast/index.js';
 import { StorageSync } from '../../utils/browser.js';
 import { getCurrentUserID } from '../../utils/user.js';
 import configuration from './configuration.js';
@@ -48,21 +49,25 @@ export default class AssignMeTaskContentFeature extends ProjectTaskShareContentF
 
         const newUsers = task.user_ids.concat(userID);
 
-        const response = await writeRecord('project.task', task.id, { user_ids: newUsers });
-        if (response) {
-            switch (callback) {
-                case ASSIGN_TYPE.RELOAD: {
-                    for (const e of document.getElementsByName('joorney_action_assign_to_me')) e.remove();
-                    const { useSimulatedUI } = await StorageSync.get({ useSimulatedUI: false });
-                    if (useSimulatedUI) this.addUserInUI();
-                    else window.location.reload();
-                    break;
-                }
-                case ASSIGN_TYPE.REDIRECT: {
-                    window.open(window.location.href);
-                    break;
+        try {
+            const response = await writeRecord('project.task', task.id, { user_ids: newUsers });
+            if (response) {
+                switch (callback) {
+                    case ASSIGN_TYPE.RELOAD: {
+                        for (const e of document.getElementsByName('joorney_action_assign_to_me')) e.remove();
+                        const { useSimulatedUI } = await StorageSync.get({ useSimulatedUI: false });
+                        if (useSimulatedUI) this.addUserInUI();
+                        else window.location.reload();
+                        break;
+                    }
+                    case ASSIGN_TYPE.REDIRECT: {
+                        window.open(window.location.href);
+                        break;
+                    }
                 }
             }
+        } catch (err) {
+            ToastManager.warn(this.configuration.id, 'An error occur during task asssignation', err.message);
         }
     }
 
