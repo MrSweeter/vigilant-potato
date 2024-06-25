@@ -1,5 +1,7 @@
 import { isDevMode } from '../background/src/check_version.js';
 import { getFeaturesAndCurrentSettings } from '../configuration.js';
+import ChecklistManager from '../src/checklist/manager.js';
+import { StorageLocal } from '../src/utils/browser.js';
 import { initImportExport } from './import_export.js';
 import { loadPage as loadConfigurationPage } from './pages/configuration/index.js';
 import { loadPage as loadTechnicalPage } from './pages/technical/index.js';
@@ -14,6 +16,7 @@ const PAGES = [
     {
         id: 'page-website',
         menu: 'page-website',
+        tour: 'tour_hostControls',
         label: 'Hosts control',
         path: './pages/website/index.html',
         loader: loadWebsitePage,
@@ -22,6 +25,7 @@ const PAGES = [
     {
         id: 'page-configuration',
         menu: 'page-configuration',
+        tour: 'tour_preferences',
         label: 'Preferences',
         path: './pages/configuration/index.html',
         loader: loadConfigurationPage,
@@ -29,6 +33,7 @@ const PAGES = [
     {
         id: 'page-version',
         menu: 'page-version',
+        tour: 'tour_versions',
         label: 'Versions',
         path: './pages/version/index.html',
         loader: loadVersionPage,
@@ -36,6 +41,7 @@ const PAGES = [
     {
         id: 'page-toast',
         menu: 'page-toast',
+        tour: 'tour_toasts',
         label: 'Notifications',
         path: './pages/toast/index.html',
         loader: loadToastPage,
@@ -43,6 +49,7 @@ const PAGES = [
     {
         id: 'page-technical',
         menu: 'page-technical',
+        tour: 'tour_technical',
         label: 'Developers',
         path: './pages/technical/index.html',
         loader: loadTechnicalPage,
@@ -56,12 +63,14 @@ async function onDOMContentLoaded() {
 
     initImportExport();
 
-    loadMenus();
+    await loadMenus();
     loadShortcut();
 
     const searchParams = new URLSearchParams(window.location.search);
     toggleTechnicalMenus(!searchParams.get('debug') && !(await isDevMode()));
     document.getElementById('joorney-brand-debug').onclick = () => toggleTechnicalMenus();
+
+    ChecklistManager.load();
 }
 
 document.removeEventListener('DOMContentLoaded', onDOMContentLoaded);
@@ -73,7 +82,7 @@ function toggleTechnicalMenus(force = undefined) {
     }
 }
 
-function loadMenus() {
+async function loadMenus() {
     const container = document.getElementById(MENU_ITEMS_CONTAINER);
     container.innerHTML = '';
     const pageMenus = PAGES.filter((p) => p.menu);
@@ -81,8 +90,25 @@ function loadMenus() {
         loadMenu(page, container);
     }
 
-    const defaultMenu = pageMenus.find((m) => m.default);
+    const defaultMenu = await getDefaultMenu(pageMenus);
+
     document.getElementById(defaultMenu.id).click();
+}
+
+async function getDefaultMenu(pageMenus) {
+    const tourState = await StorageLocal.get({
+        tour_hostControls: false,
+        tour_preferences: false,
+        tour_versions: false,
+        tour_toasts: false,
+    });
+    const tourOrder = ['tour_versions', 'tour_hostControls', 'tour_preferences', 'tour_toasts'];
+    const defaultMenuTour = tourOrder.find((t) => !tourState[t]);
+
+    const defaultMenu =
+        pageMenus.find((m) => (defaultMenuTour ? m.tour === defaultMenuTour : m.default)) ?? pageMenus[0];
+
+    return defaultMenu;
 }
 
 function loadMenu(page, container) {
@@ -107,6 +133,7 @@ async function loadPage(page) {
     document.getElementById(PAGE_CONTAINER).innerHTML = data;
     page.loader(features, currentSettings);
     if (page.menu) updateActiveMenu(page.menu);
+    updateMenuTour(page.tour);
 }
 
 function updateActiveMenu(menu) {
@@ -114,4 +141,8 @@ function updateActiveMenu(menu) {
         if (e.id === menu) e.classList.add('active');
         else e.classList.remove('active');
     }
+}
+
+function updateMenuTour(tourID) {
+    ChecklistManager.onboard(tourID);
 }
