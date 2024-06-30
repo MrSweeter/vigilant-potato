@@ -1,7 +1,7 @@
 import { baseSettings } from '../../configuration.js';
 import { stringToHTML } from '../html_generator.js';
 import { isSupportedOdoo } from '../utils/authorize.js';
-import { StorageSync } from '../utils/browser.js';
+import { Console, StorageSync } from '../utils/browser.js';
 import {
     ToastContainerElementID,
     buildContainer,
@@ -70,24 +70,7 @@ export const ToastManager = {
         const existing = Object.entries(existingToast).find((entry) => entry[1].msg === message);
         if (existing) {
             if (existing[1].id) clearTimeout(existing[1].id);
-            const features = document.getElementById(existing[0]).getElementsByClassName('toast-feature')[0];
-            const featureBadge = stringToHTML(`
-                <span class="badge rounded-pill">${feature}</span>
-            `);
-            features.appendChild(featureBadge);
-
-            const toast = document.getElementById(existing[0]);
-            if (!toast) return true;
-            const progress = toast.getElementsByClassName('toast-progress')[0];
-            if (!progress) return true;
-
-            progress.style.animation = 'none';
-            progress.offsetWidth; // force re-render
-            progress.style.animation = '';
-            existingToast[existing[0]].id = setTimeout(() => {
-                this._hide(existing[0]);
-            }, toastDurationMillis + toastFadeInOutDurationMillis);
-
+            this._updateui(existing, feature);
             return true;
         }
 
@@ -133,19 +116,19 @@ export const ToastManager = {
         if (antispam) existingToast[itemID] = message;
         switch (type) {
             case 'info':
-                console.info(`(${feature})\n${title}\n${message}`);
+                Console.info(`(${feature})\n${title}\n${message}`);
                 break;
             case 'danger':
-                console.log(`[${type}] (${feature})\n${title}\n${message}`);
+                Console.error(`(${feature})\n${title}\n${message}`);
                 break;
             case 'warning':
-                console.log(`[${type}] (${feature})\n${title}\n${message}`);
+                Console.warn(`(${feature})\n${title}\n${message}`);
                 break;
             case 'success':
-                console.log(`(${feature})\n${title}\n${message}`);
+                Console.success(`(${feature})\n${title}\n${message}`);
                 break;
             default:
-                console.log(`[${type}] (${feature})\n${title}\n${message}`);
+                Console.log(`[${type}] (${feature})\n${title}\n${message}`);
         }
         if (antispam) {
             setTimeout(() => {
@@ -186,5 +169,25 @@ export const ToastManager = {
             toast.remove();
             delete existingToast[toastID];
         }, toastDelayMillis + toastFadeInOutDurationMillis);
+    },
+
+    _updateui(existing, feature) {
+        const features = document.getElementById(existing[0]).getElementsByClassName('toast-feature')[0];
+        const featureBadge = stringToHTML(`
+                <span class="badge rounded-pill">${feature}</span>
+            `);
+        features.appendChild(featureBadge);
+
+        const toast = document.getElementById(existing[0]);
+        if (!toast) return true;
+        const progress = toast.getElementsByClassName('toast-progress')[0];
+        if (!progress) return true;
+
+        progress.style.animation = 'none';
+        progress.offsetWidth; // force re-render
+        progress.style.animation = '';
+        existingToast[existing[0]].id = setTimeout(() => {
+            this._hide(existing[0]);
+        }, toastDurationMillis + toastFadeInOutDurationMillis);
     },
 };

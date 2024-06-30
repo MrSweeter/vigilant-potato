@@ -1,5 +1,5 @@
 import { baseSettings } from '../../configuration.js';
-import { StorageLocal, StorageSync } from './browser.js';
+import { Console, StorageLocal, StorageSync } from './browser.js';
 import { ValueIsNaN, sanitizeURL, sleep } from './util.js';
 import { sanitizeVersion } from './version.js';
 
@@ -140,13 +140,13 @@ function isVersionSupported(supportedVersion, version, uniqueOperator) {
 
     if (supportedVersion.endsWith('+')) {
         if (uniqueOperator) return versionNum >= supportedVersionNum;
-        console.warn('Version operator "+" cannot be used with other values, with ":" for range');
+        Console.warn('Version operator "+" cannot be used with other values, with ":" for range');
         return false;
     }
 
     if (supportedVersion.endsWith('-')) {
         if (uniqueOperator) return versionNum < supportedVersionNum;
-        console.warn('Version operator "-" cannot be used with other values, with ":" for range');
+        Console.warn('Version operator "-" cannot be used with other values, with ":" for range');
         return false;
     }
 
@@ -155,7 +155,7 @@ function isVersionSupported(supportedVersion, version, uniqueOperator) {
         const minimum = Number.parseFloat(fromTo[0]);
         const maximum = Number.parseFloat(fromTo[1]);
         if (ValueIsNaN(minimum) || ValueIsNaN(maximum)) {
-            console.warn(`Invalid range for operator ":" --> ${supportedVersion}`);
+            Console.warn(`Invalid range for operator ":" --> ${supportedVersion}`);
             return false;
         }
         return versionNum >= minimum && versionNum < maximum;

@@ -88,7 +88,7 @@ export async function onContextMenuItemClick(info, tab) {
 
     const items = await getItems(tab, false);
     const item = items[itemId];
-    if (item.path) {
+    if (item?.path) {
         sendTabMessage(tab.id, MESSAGE_ACTION.TO_CONTENT.CM_OPEN_MENU, { menupath: item.path });
     }
 }
@@ -107,12 +107,8 @@ async function createContextMenuItem(createProperties) {
     // https://developer.chrome.com/docs/extensions/reference/api/contextMenus#method-create
     // TODO switch to await when Promise flow is release
     return new Promise((resolve) => {
-        try {
-            ContextMenus.create(createProperties, resolve);
-        } catch {
-            resolve();
-        }
-    });
+        ContextMenus.create(createProperties, resolve);
+    }).catch(() => {});
 }
 
 async function getItems(tab = undefined, toArray = true) {

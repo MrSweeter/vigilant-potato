@@ -2,7 +2,7 @@ import { importFeatureBackgroundTriggerFile, importFeatureContentFile } from '..
 import { getMenu } from '../src/api/odoo.js';
 import { getRunbotOpenUrl } from '../src/shared/limited/runbot_content.js';
 import { ToastManager, loadToast } from '../src/toast/index.js';
-import { Runtime, StorageLocal, sendRuntimeMessage } from '../src/utils/browser.js';
+import { Console, Runtime, StorageLocal, sendRuntimeMessage } from '../src/utils/browser.js';
 import { MESSAGE_ACTION } from '../src/utils/messaging.js';
 import { createActionMenuURL } from '../src/utils/url_manager.js';
 import { getOdooVersion } from '../src/utils/version.js';
@@ -48,7 +48,7 @@ async function onVersionLoaded() {
                 sendResponse(r);
             })
             .catch((ex) => {
-                console.warn(ex);
+                Console.warn(ex);
                 sendResponse();
             });
         return true;

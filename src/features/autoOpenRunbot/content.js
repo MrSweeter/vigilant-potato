@@ -1,4 +1,5 @@
 import LimitedRunbotContentFeature, { openVersionKey, searchVersionPath } from '../../shared/limited/runbot_content.js';
+import { Console } from '../../utils/browser.js';
 import { ValueIsNaN } from '../../utils/util.js';
 import { sanitizeVersion } from '../../utils/version.js';
 import configuration from './configuration.js';
@@ -31,7 +32,7 @@ export default class AutoOpenRunbotContentFeature extends LimitedRunbotContentFe
             await this.openRunbot(`https://runbot.odoo.com/${path}`, false);
         } catch (error) {
             if (batchOffset) {
-                console.warn(error);
+                Console.warn(error);
                 return;
             }
             this.loadPath(url, 1);

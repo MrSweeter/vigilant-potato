@@ -1,4 +1,4 @@
-import { StorageLocal } from '../../src/utils/browser.js';
+import { Console, StorageLocal } from '../../src/utils/browser.js';
 import { sleep } from '../../src/utils/util.js';
 import { stringToHTML } from '../html_generator.js';
 import { Checklist } from './index.js';
@@ -8,12 +8,12 @@ export default class ChecklistContent {
     constructor(id) {
         const tour = tours[id];
         if (!tour) {
-            console.warn(`No tour: ${id}`);
+            Console.warn(`No tour: ${id}`);
             Checklist.manager.hide();
             return;
         }
         if (Object.keys(tour.steps).length <= 0) {
-            console.warn(`Empty tour: ${id}`);
+            Console.warn(`Empty tour: ${id}`);
             Checklist.manager.hide();
             return;
         }

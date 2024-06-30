@@ -1,4 +1,13 @@
-import { ContextMenus, Runtime, StorageSync, Tabs, WebNavigation, sendTabMessage } from '../src/utils/browser.js';
+import {
+    Console,
+    ContextMenus,
+    Runtime,
+    StorageSync,
+    Tabs,
+    WebNavigation,
+    Windows,
+    sendTabMessage,
+} from '../src/utils/browser.js';
 
 import { features, getCurrentSettings, loadFeaturesConfiguration } from '../configuration.js';
 import { checkHostsExpiration } from '../src/api/cache.js';
@@ -58,6 +67,11 @@ Tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
     }
 });
 
+Windows.onFocusChanged.addListener(async (windowId) => {
+    const tabs = await Tabs.query({ active: true, windowId: windowId });
+    if (tabs.length > 0) updateContext(tabs[0].id);
+});
+
 // Triggers when a message is received (from the content script)
 Runtime.onMessage.addListener((message, sender, sendResponse) => {
     handleMessage(message, sender)
@@ -65,7 +79,7 @@ Runtime.onMessage.addListener((message, sender, sendResponse) => {
             sendResponse(r);
         })
         .catch((ex) => {
-            console.warn(ex);
+            Console.warn(ex);
             sendResponse();
         });
     return true;
@@ -76,7 +90,7 @@ ContextMenus.onClicked.addListener(onContextMenuItemClick);
 async function updateContext(tabId) {
     disableDynamicItems();
 
-    await new Promise((r) => setTimeout(r, 1000)); // delay update to avoid fake positive
+    //await new Promise((r) => setTimeout(r, 1000)); // delay update to avoid fake positive | edit: should be handled below with try-catch & tab.active
 
     try {
         const tab = await Tabs.get(tabId);
@@ -87,8 +101,8 @@ async function updateContext(tabId) {
         updateContextMenu(tab, odooInfo.isOdoo, odooInfo.version);
     } catch (error) {
         // Error: No tab with id (from Tabs.get) is expected
-        if (`${error}`.includes(tabId)) console.log(`background.js - updateContext: ${error}`);
-        else console.error(error);
+        if (`${error}`.includes(tabId)) Console.log(`background.js - updateContext: ${error}`);
+        else Console.error(error);
     }
 }
 

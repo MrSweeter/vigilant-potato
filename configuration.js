@@ -1,5 +1,5 @@
 import FeaturesState from './features_state.json';
-import { StorageSync, sendRuntimeMessage } from './src/utils/browser.js';
+import { Console, StorageSync, sendRuntimeMessage } from './src/utils/browser.js';
 import { MESSAGE_ACTION } from './src/utils/messaging.js';
 import { sanitizeVersion } from './src/utils/version.js';
 
@@ -50,7 +50,7 @@ const activeFeaturesList = Object.keys(FeaturesState).filter((k) => FeaturesStat
 export let features = [];
 export async function loadFeaturesConfiguration() {
     features = await Promise.all(activeFeaturesList.map((f) => importFeatureConfigurationFile(f)));
-    console.info(features);
+    Console.info(features);
 }
 
 export function importFeatureConfigurationFile(featureID) {
