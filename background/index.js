@@ -11,12 +11,7 @@ import {
 
 import { features, getCurrentSettings, loadFeaturesConfiguration } from '../configuration.js';
 import { checkHostsExpiration } from '../src/api/cache.js';
-import {
-    createContextMenu,
-    disableDynamicItems,
-    onContextMenuItemClick,
-    updateContextMenu,
-} from '../src/contextmenu/manager.js';
+import { createContextMenu, onContextMenuItemClick, updateContext } from '../src/contextmenu/manager.js';
 import { MESSAGE_ACTION } from '../src/utils/messaging.js';
 import { sleep } from '../src/utils/util.js';
 import { checkVersion, openOption } from './src/check_version.js';
@@ -61,11 +56,12 @@ Tabs.onActivated.addListener((activeInfo) => {
     updateContext(activeInfo.tabId);
 });
 
-Tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
-    if (changeInfo.status === 'complete') {
-        updateContext(tabId);
-    }
-});
+// Handled by message "TAB_LOADED"
+// Tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
+//     if (changeInfo.status === 'complete') {
+//         updateContext(tabId);
+//     }
+// });
 
 Windows.onFocusChanged.addListener(async (windowId) => {
     const tabs = await Tabs.query({ active: true, windowId: windowId });
@@ -86,25 +82,6 @@ Runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 ContextMenus.onClicked.addListener(onContextMenuItemClick);
-
-async function updateContext(tabId) {
-    disableDynamicItems();
-
-    //await new Promise((r) => setTimeout(r, 1000)); // delay update to avoid fake positive | edit: should be handled below with try-catch & tab.active
-
-    try {
-        const tab = await Tabs.get(tabId);
-        if (!tab.active) return;
-        if (!tab.url.startsWith('http')) return;
-        const odooInfo = await sendTabMessage(tab.id, MESSAGE_ACTION.TO_CONTENT.REQUEST_ODOO_INFO);
-        if (!odooInfo) return;
-        updateContextMenu(tab, odooInfo.isOdoo, odooInfo.version);
-    } catch (error) {
-        // Error: No tab with id (from Tabs.get) is expected
-        if (`${error}`.includes(tabId)) Console.log(`background.js - updateContext: ${error}`);
-        else Console.error(error);
-    }
-}
 
 async function main() {
     // Add some delay to avoid initialization side effect

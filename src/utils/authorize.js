@@ -58,6 +58,11 @@ export async function isAuthorizedLimitedFeature(featureName, url) {
     if (!configuration[key]) return false;
     const origin = url.origin;
 
+    const { offs } = await StorageLocal.get({ offs: [] });
+    if (offs.includes(origin)) {
+        return false;
+    }
+
     // Check URL
     if (configuration[configKey].includes(origin)) {
         return true;

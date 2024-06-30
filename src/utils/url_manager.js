@@ -18,7 +18,11 @@ export function createActionMenuURL(url, actionID) {
         return `${url.origin}${url.pathname}#action=${actionID}`;
     }
 
-    return `${url.origin}${url.pathname}/action-${actionID}${url.search}`;
+    if (url.pathname.startsWith('/odoo')) {
+        return `${url.origin}${url.pathname}/action-${actionID}${url.search}`;
+    }
+
+    return `${url.origin}/odoo/action-${actionID}`; // Not compatible before 17.2 --> 404
 }
 //#endregion
 

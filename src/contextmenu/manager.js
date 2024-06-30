@@ -2,7 +2,7 @@ import { features } from '../../configuration.js';
 import { clearHost } from '../api/cache.js';
 import { openRunbotWithVersionMenuItem } from '../features/autoOpenRunbot/configuration.js';
 import { isAuthorizedFeature, isAuthorizedLimitedFeature } from '../utils/authorize.js';
-import { ContextMenus, Runtime, StorageSync, sendTabMessage } from '../utils/browser.js';
+import { Console, ContextMenus, Runtime, StorageSync, Tabs, sendTabMessage } from '../utils/browser.js';
 import { MESSAGE_ACTION } from '../utils/messaging.js';
 import { sanitizeURL } from '../utils/util.js';
 import { clearLocalCacheMenuItem, optionMenuItem, separatorMenuItem } from './item.js';
@@ -52,7 +52,24 @@ export async function createContextMenu() {
     await Promise.all(items);
 }
 
-export async function updateContextMenu(tab, isOdoo, version) {
+export async function updateContext(tabId) {
+    disableDynamicItems();
+
+    try {
+        const tab = await Tabs.get(tabId);
+        if (!tab.active) return;
+        if (!tab.url.startsWith('http')) return;
+        const odooInfo = await sendTabMessage(tab.id, MESSAGE_ACTION.TO_CONTENT.REQUEST_ODOO_INFO);
+        if (!odooInfo || !odooInfo.isOdoo) return;
+        updateContextMenu(tab, odooInfo.isOdoo, odooInfo.version);
+    } catch (error) {
+        // Error: No tab with id (from Tabs.get) is expected
+        if (`${error}`.includes(tabId)) Console.log(`background.js - updateContext: ${error}`);
+        else Console.error(error);
+    }
+}
+
+async function updateContextMenu(tab, isOdoo, version) {
     const dynamicItems = await getItems(tab);
 
     const itemsUpdate = [];

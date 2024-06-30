@@ -1,5 +1,5 @@
 import { features, importFeatureBackgroundFile } from '../../configuration.js';
-import { createContextMenu } from '../../src/contextmenu/manager.js';
+import { createContextMenu, updateContext } from '../../src/contextmenu/manager.js';
 import { MESSAGE_ACTION } from '../../src/utils/messaging.js';
 import { updateTabState } from './keyboard_shortcut.js';
 import { getFinalRunbotURL } from './runbot.js';
@@ -32,6 +32,10 @@ async function handleAction(message, sender) {
         case MESSAGE_ACTION.TO_BACKGROUND.TRIGGER_FEATURE: {
             if (!message.feature) return undefined;
             callback = handleFeature(message.feature, sender.tab);
+            break;
+        }
+        case MESSAGE_ACTION.TO_BACKGROUND.TAB_LOADED: {
+            callback = updateContext(sender.tab.id);
             break;
         }
     }

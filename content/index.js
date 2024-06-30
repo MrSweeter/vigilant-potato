@@ -54,6 +54,8 @@ async function onVersionLoaded() {
         return true;
     });
 
+    sendRuntimeMessage(MESSAGE_ACTION.TO_BACKGROUND.TAB_LOADED);
+
     loadedURL = url;
 }
 
