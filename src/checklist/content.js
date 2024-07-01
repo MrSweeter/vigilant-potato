@@ -1,7 +1,8 @@
+import { PAGES } from '../../options/menu.js';
 import { Console, StorageLocal } from '../../src/utils/browser.js';
 import { sleep } from '../../src/utils/util.js';
 import { stringToHTML } from '../html_generator.js';
-import { Checklist } from './index.js';
+import { Checklist, getNextTourID } from './index.js';
 import { tours } from './tour.js';
 
 export default class ChecklistContent {
@@ -24,7 +25,7 @@ export default class ChecklistContent {
     }
 
     async load() {
-        this.congrats(false);
+        await this.congrats(false);
         document.getElementById('joorney_checklist_tour_title').innerText = this.tour.title;
         document.getElementById('joorney_checklist_tour_description').innerText = this.tour.description;
 
@@ -191,23 +192,42 @@ export default class ChecklistContent {
 
     async completeTour() {
         await StorageLocal.set({ [this.tour.id]: true, [`${this.tour.id}_version`]: this.tour.version });
-        this.congrats(true);
+        await this.congrats(true);
         const titleIcon = document.getElementById('joorney_checklist_tour_title_markall_done');
         titleIcon.onclick = null;
         titleIcon.title = '';
         titleIcon.className = 'fa-solid fa-clipboard-check text-success fa-2xs';
     }
 
-    congrats(isShow) {
+    async congrats(isShow) {
         const congratsElement = document.getElementById('joorney_checklist_congrats');
         congratsElement.classList.toggle('mt-3', isShow);
         congratsElement.style.height = isShow ? null : 0;
         congratsElement.style.maxHeight = isShow ? '1000px' : 0;
         document.getElementById('joorney_checklist_congrats_separator').classList.toggle('d-none', !isShow);
         document.getElementById('joorney_checklist_congrats_blur').classList.toggle('d-none', !isShow);
-        document.getElementById('joorney_checklist_congrats_restart').onclick = () => {
-            if (isShow) this.restart();
-        };
+
+        const mainButton = document.getElementById('joorney_checklist_congrats_primary');
+        const secondaryButton = document.getElementById('joorney_checklist_congrats_secondary');
+        const nextTourID = await getNextTourID();
+        if (nextTourID) {
+            mainButton.innerText = 'Next';
+            mainButton.onclick = () => {
+                if (isShow) this.nextTour(nextTourID);
+            };
+            secondaryButton.innerText = 'Restart';
+            secondaryButton.onclick = () => {
+                if (isShow) this.restart();
+            };
+            secondaryButton.classList.remove('d-none');
+        } else {
+            mainButton.innerText = 'Restart';
+            mainButton.onclick = () => {
+                if (isShow) this.restart();
+            };
+            secondaryButton.classList.add('d-none');
+            secondaryButton.onclick = () => {};
+        }
 
         const progress = document.getElementById('joorney_checklist_tour_progress');
         progress.classList.toggle('progress-bar-striped', isShow);
@@ -217,8 +237,16 @@ export default class ChecklistContent {
     async restart() {
         const stepIDs = Object.keys(this.tour.store);
         await StorageLocal.remove(stepIDs);
-        this.congrats(false);
+        await this.congrats(false);
         this.load();
+    }
+
+    async nextTour(nextTourID) {
+        if (!nextTourID) return;
+        const tourMenu = PAGES.find((m) => m.tour === nextTourID);
+        if (!tourMenu) return;
+
+        document.getElementById(tourMenu.id).click();
     }
 
     inspect(trigger, btn = false) {

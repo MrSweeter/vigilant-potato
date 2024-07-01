@@ -1,61 +1,13 @@
 import { isDevMode } from '../background/src/check_version.js';
 import { getFeaturesAndCurrentSettings } from '../configuration.js';
+import { getNextTourID } from '../src/checklist/index.js';
 import ChecklistManager from '../src/checklist/manager.js';
-import { StorageLocal } from '../src/utils/browser.js';
 import { initImportExport } from './import_export.js';
-import { loadPage as loadConfigurationPage } from './pages/configuration/index.js';
-import { loadPage as loadTechnicalPage } from './pages/technical/index.js';
-import { loadPage as loadToastPage } from './pages/toast/index.js';
-import { loadPage as loadVersionPage } from './pages/version/index.js';
-import { loadPage as loadWebsitePage } from './pages/website/index.js';
+import { PAGES } from './menu.js';
 import { load as loadShortcut } from './src/keyboard_shortcut.js';
 
 const MENU_ITEMS_CONTAINER = 'joorney-menu-items-container';
 const PAGE_CONTAINER = 'joorney-page-container';
-const PAGES = [
-    {
-        id: 'page-website',
-        menu: 'page-website',
-        tour: 'tour_hostControls',
-        label: 'Hosts control',
-        path: './pages/website/index.html',
-        loader: loadWebsitePage,
-        default: true,
-    },
-    {
-        id: 'page-configuration',
-        menu: 'page-configuration',
-        tour: 'tour_preferences',
-        label: 'Preferences',
-        path: './pages/configuration/index.html',
-        loader: loadConfigurationPage,
-    },
-    {
-        id: 'page-version',
-        menu: 'page-version',
-        tour: 'tour_versions',
-        label: 'Versions',
-        path: './pages/version/index.html',
-        loader: loadVersionPage,
-    },
-    {
-        id: 'page-toast',
-        menu: 'page-toast',
-        tour: 'tour_toasts',
-        label: 'Notifications',
-        path: './pages/toast/index.html',
-        loader: loadToastPage,
-    },
-    {
-        id: 'page-technical',
-        menu: 'page-technical',
-        tour: 'tour_technical',
-        label: 'Developers',
-        path: './pages/technical/index.html',
-        loader: loadTechnicalPage,
-        technical: true,
-    },
-];
 
 async function onDOMContentLoaded() {
     document.getElementById('copyright-year').innerText = new Date().getFullYear();
@@ -96,15 +48,7 @@ async function loadMenus() {
 }
 
 async function getDefaultMenu(pageMenus) {
-    const tourState = await StorageLocal.get({
-        tour_hostControls: false,
-        tour_preferences: false,
-        tour_versions: false,
-        tour_toasts: false,
-    });
-    const tourOrder = ['tour_versions', 'tour_hostControls', 'tour_preferences', 'tour_toasts'];
-    const defaultMenuTour = tourOrder.find((t) => !tourState[t]);
-
+    const defaultMenuTour = await getNextTourID();
     const defaultMenu =
         pageMenus.find((m) => (defaultMenuTour ? m.tour === defaultMenuTour : m.default)) ?? pageMenus[0];
 

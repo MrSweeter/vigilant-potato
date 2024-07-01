@@ -20,3 +20,15 @@ export async function getOnboardingProgressData() {
     });
     return progress;
 }
+
+export async function getNextTourID() {
+    const tourState = await StorageLocal.get({
+        tour_hostControls: false,
+        tour_preferences: false,
+        tour_versions: false,
+        tour_toasts: false,
+    });
+    const tourOrder = ['tour_versions', 'tour_hostControls', 'tour_preferences', 'tour_toasts'];
+    const defaultMenuTour = tourOrder.find((t) => !tourState[t]);
+    return defaultMenuTour;
+}
